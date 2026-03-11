@@ -1,0 +1,181 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@page "/screens/list"
+@inherits ScreenListBase
+@attribute [Authorize]
+@using RssSite.Components.Models
+
+<div class="screenManagement">
+    <div class="pageHeader">
+        <h1 class="pageTitle">Screen Management</h1>
+        <div class="header-actions">
+            <button class="btnPrimary refreshButton" @onclick="LoadScreens">
+                <i class="icon-refresh"></i>
+                <span>Refresh List</span>
+            </button>
+            @if (IsAdmin)
+            {
+                <div class="admin-view-toggle">
+                    <label class="switch">
+                        <input type="checkbox" @bind="IsAdminView" />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">@(IsAdminView ? "Admin View" : "User View")</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (ScreenListResult.IsLoading)
+    {
+        <div class="loadingIndicator">
+            <div class="spinner"></div>
+            <span>Loading screens...</span>
+        </div>
+    }
+    @if (!ScreenListResult.IsLoading && !string.IsNullOrEmpty(ScreenListResult.ErrorMessage))
+    {
+        <div class="alertError">
+            <i class="icon-error"></i>
+            <span>@ScreenListResult.ErrorMessage</span>
+        </div>
+    }
+    @if (!ScreenListResult.IsLoading && string.IsNullOrEmpty(ScreenListResult.ErrorMessage))
+    {
+        <div class="searchAndFilterContainer">
+            <div class="searchBar">
+                <select class="SearchField" @bind="SearchField">
+                    <option value="name">Screen Name</option>
+                    <option value="macaddress">MAC Address</option>
+                    <option value="address">Address</option>
+                    <option value="status">Status</option>
+                </select>
+                <input type="text"
+                       class="searchInput"
+                       @bind-value="SearchTerm"
+                       @bind-value:event="oninput"
+                       @onkeydown="@(e => { if (e.Key == "Enter") Search(); })"
+                       placeholder="Search..." />
+                <button class="btnPrimary" @onclick="Search">
+                    <i class="icon-search"></i>
+                    <span>Search</span>
+                </button>
+            </div>
+
+            <div class="PageSizeSelector">
+                <label for="PageSize">Items per page:</label>
+                <select id="PageSize" @bind="PageSize">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tableContainer">
+            <table class="dataTable">
+                <thead>
+                    <tr>
+                        <th>MAC Address</th>
+                        <th>Screen Name</th>
+                        <th>Address</th>
+                        <th>Status</th>
+                        <th>Last Seen</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ScreenModel screen in DisplayedScreens)
+                    {
+                        <tr>
+                            <td>@(screen.MacAddress ?? "N/A")</td>
+                            <td>@(screen.Name ?? "N/A")</td>
+                            <td>@(screen.Address ?? "N/A")</td>
+                            <td>
+                                <span class="statusBadge @GetStatusClass(screen.Status ?? "Unknown")">
+                                    @(screen.Status ?? "Unknown")
+                                </span>
+                            </td>
+                            <td>@(screen.LastSeenOnline?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Never")</td>
+                            <td>@screen.LastUpdated.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>
+                                <div class="buttonGroup">
+                                    <button class="btnSecondary"
+                                            @onclick="() => NavigateToLogs(screen.MacAddress ?? string.Empty)"
+                                            disabled="@(string.IsNullOrEmpty(screen.MacAddress))">
+                                        View Logs
+                                    </button>
+                                    @if (IsAdminView)
+                                    {
+                                        <button class="btnSecondary"
+                                                @onclick="() => NavigateToConfig(screen.MacAddress ?? string.Empty)"
+                                                disabled="@(string.IsNullOrEmpty(screen.MacAddress))">
+                                            Configure
+                                        </button>
+                                        <button class="btnDanger"
+                                                @onclick="() => ConfirmDelete(screen.MacAddress ?? string.Empty)"
+                                                disabled="@(string.IsNullOrEmpty(screen.MacAddress))">
+                                            Delete
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (DisplayedScreens.Count > 0)
+        {
+            <div class="paginationControls">
+                <div class="pageInfo">
+                    @if (TotalScreens > 0)
+                    {
+                        <span>Showing @((CurrentPage - 1) * PageSize + 1)-@(Math.Min(CurrentPage * PageSize, TotalScreens)) of @TotalScreens items</span>
+                    }
+                    @if (TotalScreens <= 0)
+                    {
+                        <span>0 items</span>
+                    }
+                </div>
+                <div class="pageButtons">
+                    <button class="btnPagination" @onclick="() => GoToPage(1)" disabled="@(CurrentPage == 1)">First</button>
+                    <button class="btnPagination" @onclick="PreviousPage" disabled="@(CurrentPage == 1)">Previous</button>
+
+                    @for (int i = Math.Max(1, CurrentPage - 2); i <= Math.Min(TotalPages, CurrentPage + 2); i++)
+                    {
+                        int pageNumber = i;
+                        <button class="btnPage @(pageNumber == CurrentPage ? "btnPageActive" : "")"
+                                @onclick="() => GoToPage(pageNumber)">
+                            @pageNumber
+                        </button>
+                    }
+
+                    <button class="btnPagination" @onclick="NextPage" disabled="@(CurrentPage == TotalPages)">Next</button>
+                    <button class="btnPagination" @onclick="() => GoToPage(TotalPages)" disabled="@(CurrentPage == TotalPages)">Last</button>
+                </div>
+            </div>
+        }
+    }
+
+    @if (ShowDeleteConfirmation)
+    {
+        <div class="modalOverlay">
+            <div class="deletePopup">
+                <div class="modalHeader">
+                    <h5>Confirm Delete</h5>
+                </div>
+                <div class="modalBody">
+                    <p>Are you sure you want to delete the screen with MAC address <strong>@ScreenToDelete</strong>?</p>
+                    <p>This action cannot be undone.</p>
+                </div>
+                <div class="modalFooter">
+                    <button class="btnSecondary" @onclick="CancelDelete">Cancel</button>
+                    <button class="btnDanger" @onclick="OnDeleteConfirmed">Delete</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>

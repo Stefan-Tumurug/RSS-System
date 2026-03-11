@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RSS Player - No Configuration</title>
+    <style>
+        /* ... (previous CSS styles remain the same) ... */
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #f0f4f8;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+            .loading.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 4px solid #3182ce;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <h1>RSS Player</h1>
+        <p>No configuration found for this device.</p>
+        <div class="mac-address">
+            <strong>Device MAC Address:</strong>
+            <span id="macAddress">Loading...</span>
+        </div>
+        <div class="instruction">
+            <p>Please contact your administrator to configure this screen.</p>
+            <p>Provide the MAC address shown above when requesting configuration.</p>
+        </div>
+    </div>
+
+    <script>
+        function getMacAddress() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const macAddress = urlParams.get('mac') || 'Unable to retrieve MAC address';
+            document.getElementById('macAddress').textContent = macAddress;
+        }
+
+        function hideLoadingIndicator() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.classList.add('hidden');
+        }
+
+        window.onload = function () {
+            getMacAddress();
+            setTimeout(hideLoadingIndicator, 1500);
+        };
+    </script>
+</body>
+</html>

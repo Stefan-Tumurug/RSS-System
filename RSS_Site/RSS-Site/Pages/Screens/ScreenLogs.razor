@@ -1,0 +1,115 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@page "/screens/logs/{MacAddress}"
+@attribute [Authorize]
+@using RssSite.Components.Services
+
+<div class="logs-container">
+    <div class="logs-header">
+        <h2 class="logs-title">
+            <i class="icon-terminal"></i>
+            Logs for Screen
+            <span class="mac-address">@MacAddress</span>
+        </h2>
+        <div class="logs-filters">
+            <label>Specific Date:</label>
+            <input type="date" @bind="specificDate" />
+
+            <label>Start Date:</label>
+            <input type="date" @bind="startDate" />
+
+            <label>End Date:</label>
+            <input type="date" @bind="endDate" />
+
+            <button class="btn-refresh" @onclick="ApplyFilters">
+                <i class="icon-refresh"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="logs-loading">
+            <div class="spinner"></div>
+            <p>Retrieving screen logs...</p>
+        </div>
+    }
+    @if (!isLoading && !string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="logs-error">
+            <i class="icon-alert"></i>
+            <p>@errorMessage</p>
+        </div>
+    }
+    @if (!isLoading && string.IsNullOrEmpty(errorMessage) && filteredLogs.Count == 0)
+    {
+        <div class="logs-empty">
+            <i class="icon-info-circle"></i>
+            <p>No logs found for this screen.</p>
+        </div>
+    }
+    @if (!isLoading && string.IsNullOrEmpty(errorMessage) && filteredLogs.Count > 0)
+    {
+        <div class="logs-table-container">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th class="col-timestamp" @onclick="SortByTimestamp">
+                            Timestamp
+                            @if (sortColumn == "Timestamp")
+                            {
+                                <span>@(isSortAscending ? "▲" : "▼")</span>
+                            }
+                        </th>
+                        <th class="col-action">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ApiService.LogEntry log in filteredLogs)
+                    {
+                        <tr @onclick="() => ShowLogDetails(log)">
+                            <td class="col-timestamp">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td class="col-action">
+                                @(log.Action.Contains("Status updated to Idle") ? "Screen is now Idle" : log.Action)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" style="display: flex; justify-content: center; margin-top: 20px;">
+            <button class="btnSecondary prev-btn" @onclick="PrevPage" disabled="@(currentPage == 1)">
+                <i class="icon-chevron-left"></i> Previous
+            </button>
+
+            @for (int i = Math.Max(1, currentPage - 4); i <= Math.Min(totalPages, currentPage + 4); i++)
+            {
+                int pageNumber = i;
+                <button class="@(pageNumber == currentPage ? "btnPrimary" : "btnSecondary")"
+                        @onclick="() => GoToPage(pageNumber)">
+                    @pageNumber
+                </button>
+            }
+
+
+            <button class="btnSecondary next-btn" @onclick="NextPage" disabled="@(currentPage >= totalPages)">
+                Next <i class="icon-chevron-right"></i>
+            </button>
+        </div>
+        <div class="logs-meta">
+            <span class="log-count">Showing @currentPageLogCount of @totalLogs log entries</span>
+        </div>
+    }
+
+    @if (selectedLog != null)
+    {
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close-button" @onclick="CloseLogDetails">×</span>
+                <h3>Log Details</h3>
+                <p><strong>Timestamp:</strong> @selectedLog.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                <p><strong>Message:</strong> @selectedLog.Action</p>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,111 @@
+﻿@page "/Host"
+@namespace RssSite.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screen Monitoring</title>
+    <base href="~/" />
+
+    <link href="/app.css?v=1" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        (function () {
+            function safeLocalStorage() {
+                try {
+                    localStorage.setItem('__test', '1');
+                    localStorage.removeItem('__test');
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            const defaultSettings = {
+                displayName: '',
+                enableEmailNotifications: true,
+                siteTheme: 'system',
+                profileVisibility: 'private',
+                twoFactorEnabled: false,
+                itemsPerPage: 10,
+                defaultSortOrder: 'newest'
+            };
+
+            function detectAndApplyTheme() {
+                if (!safeLocalStorage()) return;
+
+                let savedTheme = localStorage.getItem('rss-site-settings-v2');
+                let theme = 'system';
+
+                try {
+                    const settings = savedTheme ? JSON.parse(savedTheme) : defaultSettings;
+                    theme = settings.siteTheme || 'system';
+                } catch (e) {
+                    theme = 'system';
+                }
+
+                if (theme === 'system') {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                detectAndApplyTheme();
+                setTimeout(() => {
+                    detectAndApplyTheme();
+                }, 500);
+            });
+
+            window.applyTheme = function (theme) {
+                if (!safeLocalStorage()) return;
+
+                if (theme === 'system') {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+
+                document.documentElement.setAttribute('data-theme', theme);
+
+                try {
+                    localStorage.setItem('rss-site-settings-v2', JSON.stringify({ siteTheme: theme }));
+                } catch (e) {}
+            };
+
+            if (window.matchMedia) {
+                const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                darkModeMediaQuery.addEventListener('change', function (e) {
+                    const currentTheme = localStorage.getItem('rss-site-settings-v2');
+                    try {
+                        const settings = currentTheme ? JSON.parse(currentTheme) : {};
+                        if (settings.siteTheme === 'system') {
+                            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                        }
+                    } catch (error) {}
+                });
+            }
+
+            window.addEventListener("storage", () => {
+                const settings = localStorage.getItem('rss-site-settings-v2') ? JSON.parse(localStorage.getItem('rss-site-settings-v2')) : {};
+                document.documentElement.setAttribute('data-theme', settings.siteTheme || 'light');
+            });
+
+            setTimeout(() => {
+                const settings = localStorage.getItem('rss-site-settings-v2') ? JSON.parse(localStorage.getItem('rss-site-settings-v2')) : {};
+                document.documentElement.setAttribute('data-theme', settings.siteTheme || 'light');
+            }, 100);
+        })();
+    </script>
+</head>
+<body>
+    <app>
+        <component type="typeof(App)" render-mode="Server" />
+    </app>
+
+    <script src="site.js"></script>
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+version: "1.0.{build}"
+
+os: Visual Studio 2022
+
+environment:
+  authoriazation_token:
+    secure: 44n7qWmA7havOxXbKTH2bLA1A6j3N0nSYUsZmGPN1l0=
+
+init:
+ - ps: |
+    $headers = @{
+      "Authorization" = "Bearer $env:authoriazation_token"
+      "Content-type" = "application/json"
+    }
+
+    $apiURL = "https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG"   
+    $history = Invoke-RestMethod -Uri "$apiURL/history?recordsNumber=2" -Headers $headers  -Method Get 
+
+    if ($history.builds.Count -eq 2 -And $env:APPVEYOR_SCHEDULED_BUILD -eq "True")
+    {  
+      if ($history.builds[0].commitId -eq $history.builds[1].commitId -And $history.builds[1].status -eq "success")
+      {
+        Write-host "Current Commit ID is the same as previous, exiting build."
+        Exit-AppveyorBuild
+      }
+    }
+
+install:
+  #Tilføj MySupports NuGet-Server
+  - cmd: nuget sources add -Name MySupport -Source https://nuget.mysupport.dk/nuget
+  #Installer Grunt til at compile af less-filer & bower til restore af bower.json
+  # - npm install -g gulp-cli 
+  #Gå ind i projetets mappe hvor Gruntfile.js ligger
+  # - cd OmnishareApp_Backend
+  #Kør npm install for at installere dine pakker & bower install for at restore bower dependencies
+  # - appveyor-retry call npm install
+  #Kør gulp task'en der compiler dine less-filer
+  # - gulp styles
+  # - gulp scripts
+  #Gå tilbage til sln-mappen så vi kan kører msbuild senere
+  # - cd ..
+
+assembly_info:
+ patch: true
+ file: AssemblyInfo.*
+ assembly_version: "1.0.0"
+ assembly_file_version: "{version}"
+ assembly_informational_version: "{version}"
+
+
+branches:
+# whitelist
+ only:
+   - master
+
+before_build:
+ #Restore nuget-pakker
+ - nuget restore RSSSite.sln
+ - dotnet restore
+
+#Bygger projektet og kører publish profilen (format: [solution-file].sln /t:[projektnavn] /p:PublishProfile=[publish-profil])
+build_script: msbuild RSSSite.sln /t:RSSSite /p:Platform="Any CPU" /p:DeployOnBuild=true /p:PublishProfile="AppVeyorRelease"
+
+#Pakker der skal deployes
+artifacts:
+#stien til den mappe din publish-profil publishere til
+- path: RSS-Site/bin/Release/Publish
+  name: website
+
+
+
+deploy:
+  provider: Environment
+  name: web16
+  site_name: RemoteScreen_BackOffice
+  aspnet_core: true
+  write_access: true
+  app_offline: true
+
+notifications:
+- provider: Slack
+  auth_token:
+    secure: 6AZyxjt3NxBAtOGd2xh3ORCalc5xzx72yayG+wcPGhQ3zHs47VeISriJkQJbpzCziWSIrCLTX+B7f/Vu0J4LVA==
+  channel: '#success'
+  on_build_success: true
+  on_build_failure: false
+  on_build_status_changed: false
+
+- provider: Slack
+  auth_token:
+    secure: 6AZyxjt3NxBAtOGd2xh3ORCalc5xzx72yayG+wcPGhQ3zHs47VeISriJkQJbpzCziWSIrCLTX+B7f/Vu0J4LVA==
+  channel: '#errors'
+  on_build_success: false
+  on_build_failure: true
+  on_build_status_changed: false

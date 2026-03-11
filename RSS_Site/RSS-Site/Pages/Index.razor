@@ -1,0 +1,48 @@
+﻿@page "/"
+@layout MainLayout
+@using Microsoft.AspNetCore.Components.Authorization
+@namespace RssSite.Components.Pages
+
+<PageTitle>Remote Screen Setup - Home</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="indexContainer">
+            <div class="welcomeSection">
+                <h1 class="mainTitle">Remote Screen Setup</h1>
+                <p class="subTitle">Manage and monitor your remote screens</p>
+
+                <div class="actionSection">
+                    <a href="/screens/list" class="btnPrimary">View Screens</a>
+                </div>
+            </div>
+
+            <div class="screen-status-summary">
+                <div class="status-card online">
+                    <div class="status-label">Online Screens</div>
+                    <div class="status-number-container">
+                        <div class="status-number online">@OnlineScreenCount</div>
+                    </div>
+                </div>
+                <div class="status-card offline">
+                    <div class="status-label">Offline Screens</div>
+                    <div class="status-number-container">
+                        <div class="status-number offline">@OfflineScreenCount</div>
+                    </div>
+                </div>
+                <div class="status-card idle">
+                    <div class="status-label">Idle Screens</div>
+                    <div class="status-number-container">
+                        <div class="status-number idle">@IdleScreenCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="indexContainer">
+            <div class="welcomeSection">
+                <h1 class="mainTitle">Redirecting to login...</h1>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

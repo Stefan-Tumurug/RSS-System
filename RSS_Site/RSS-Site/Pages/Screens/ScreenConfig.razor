@@ -1,0 +1,118 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@page "/screens/config/{MacAddress}"
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="config-form">
+    <h3>Configure Screen</h3>
+    @if (isLoading)
+    {
+        <div class="loading-indicator">Loading configuration...</div>
+    }
+
+    @try
+    {
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        <EditForm Model="_screenConfigData" OnValidSubmit="SaveConfiguration">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="macAddress" class="form-label">MAC Address</label>
+                <input id="macAddress" class="form-control" @bind="_screenConfigData.MacAddress" readonly />
+            </div>
+
+            <div class="form-group">
+                <label for="screenName" class="form-label">Screen Name</label>
+                <input id="screenName" class="form-control" @bind="_screenConfigData.Name" />
+            </div>
+
+            <div class="form-group">
+                <label for="address" class="form-label">Address</label>
+                <input id="address" class="form-control" @bind="_screenConfigData.Address" />
+            </div>
+
+            <div class="form-group">
+                <label for="operatingSystem" class="form-label">Operating System</label>
+                <input id="operatingSystem" class="form-control" @bind="_screenConfigData.OperatingSystem" />
+            </div>
+
+            <div class="form-group">
+                <label for="url" class="form-label">URL</label>
+                <input id="url" class="form-control" @bind="_screenConfigData.Url" />
+            </div>
+
+            <div class="form-group">
+                <label for="idleScreenUrl" class="form-label">Idle Screen URL</label>
+                <input id="idleScreenUrl" class="form-control" @bind="_screenConfigData.IdleScreenUrl" />
+            </div>
+
+            <div class="form-group">
+                <label for="refreshInterval" class="form-label">Screen Refresh Interval (minutes)</label>
+                <input id="refreshInterval" type="number" class="form-control" @bind="_screenConfigData.RefreshInterval" min="1" />
+            </div>
+
+            <div class="form-group">
+                <label for="screenResolution" class="form-label">Screen Resolution</label>
+                <select id="screenResolution" class="form-control" @bind="_screenConfigData.ScreenResolution">
+                    <option value="1920x1080">1920x1080</option>
+                    <option value="1280x720">1280x720</option>
+                    <option value="2560x1440">2560x1440</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="autoRestart" class="form-label">Auto Restart</label>
+                <select id="autoRestart"
+                        class="form-control toggle-select"
+                        value="@(_screenConfigData.AutoRestart.ToString().ToLower())"
+                        onchange="@((ChangeEventArgs e) => UpdateAutoRestart(e.Value?.ToString()))">
+                    <option value="true">On</option>
+                    <option value="false">Off</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="startupEnabled" class="form-label">Startup Enabled</label>
+                <select id="startupEnabled"
+                        class="form-control toggle-select"
+                        value="@(_screenConfigData.StartupEnabled?.ToString().ToLower() ?? "false")"
+                        onchange="@((ChangeEventArgs e) => UpdateStartupEnabled(e.Value?.ToString()))">
+                    <option value="true">On</option>
+                    <option value="false">Off</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btnPrimary" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                Save
+            </button>
+        </EditForm>
+    }
+    catch (Exception ex)
+    {
+        <div class="alert alert-danger">
+            An unexpected error occurred: @ex.Message
+        </div>
+    }
+
+    @if (showSuccessPopup)
+    {
+        <div class="notification-popup notification-success">
+            <div class="notification-content">
+                <div class="notification-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="notification-message">@successMessage</div>
+                <button class="notification-close" @onclick="CloseSuccessPopup">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>

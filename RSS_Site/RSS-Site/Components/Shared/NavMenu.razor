@@ -1,0 +1,35 @@
+﻿@namespace RssSite.Components.Shared
+@inherits NavMenuBase
+@if (!IsUserAuthLoading)
+{
+    <div class="navMenu">
+        <ul>
+            <li><a href="/">🏢 Home</a></li>
+            <li>
+                <a href="#" @onclick="RedirectToScreenList" @onclick:preventDefault>
+                    📃 Screen List
+                </a>
+            </li>
+            @if (IsUserAuthenticated && IsUserAdmin)
+            {
+                <li>
+                    <a href="/admin/user/management">
+                        👥 User Management
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+
+    @if (IsUserAuthenticated)
+    {
+        <div class="userProfileSection">
+            <div class="welcomeMessage">Welcome, <strong>@UserDisplayName</strong></div>
+            @if (CurrentUserID.HasValue)
+            {
+                <button class="profileButton" @onclick="RedirectToUserProfile">⚙️ My Profile</button>
+            }
+            <button class="logoutButton" @onclick="PerformUserLogout">🚪 Logout</button>
+        </div>
+    }
+}

@@ -1,0 +1,136 @@
+﻿@page "/user/management/configuration"
+@page "/admin/user/management/configuration/{UserID:int}"
+@namespace RssSite.Pages.Users
+@using RssSite.Components.Models
+@using RssSite.Components.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits UserConfigurationBase
+
+<div class="userManagement">
+    <div class="pageHeader">
+        <h1 class="pageTitle">
+            @(IsAdminConfiguring ? "Manage User Settings" : "Your Profile")
+        </h1>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(SuccessMessage) && !ShowSuccessPopup)
+    {
+        <div class="alert alert-success">@SuccessMessage</div>
+    }
+
+    <div class="configuration-container">
+        <div class="configuration-panel">
+            <div class="configuration-section">
+                <h3 class="section-title">Profile Information</h3>
+                <EditForm Model="UserConfig" OnValidSubmit="UpdateProfile">
+                    <DataAnnotationsValidator />
+                    <div class="formGroup">
+                        <label class="formLabel">Username</label>
+                        <input type="text" class="formControl" value="@UserConfig.Username" disabled />
+                        <small class="text-muted username-note">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Username cannot be changed
+                        </small>
+                    </div>
+                    <div class="formGroup">
+                        <label class="formLabel" for="email">Email</label>
+                        <InputText id="email" @bind-Value="UserConfig.Email" class="formControl" />
+                        <ValidationMessage For="@(() => UserConfig.Email)" />
+                    </div>
+                    <div class="formGroup">
+                        <label class="formLabel" for="firstName">First Name</label>
+                        <InputText id="firstName" @bind-Value="UserConfig.FirstName" class="formControl" />
+                    </div>
+                    <div class="formGroup">
+                        <label class="formLabel" for="lastName">Last Name</label>
+                        <InputText id="lastName" @bind-Value="UserConfig.LastName" class="formControl" />
+                    </div>
+
+                    @if (IsAdminConfiguring)
+                    {
+                        <div class="formGroup">
+                            <label class="formLabel" for="role">Role</label>
+                            <InputSelect id="role" @bind-Value="UserConfig.Role" class="formControl">
+                                <option value="Admin">Admin</option>
+                                <option value="User">User</option>
+                            </InputSelect>
+                        </div>
+
+                        <div class="formGroup">
+                            <label class="formLabel">
+                                <InputCheckbox @bind-Value="UserConfig.IsActive" />
+                                Account Active
+                            </label>
+                        </div>
+                    }
+
+                    <button type="submit" class="btnPrimary" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Update Profile
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+        <div class="configuration-panel">
+            <div class="configuration-section">
+                <h3 class="section-title">Change Password</h3>
+                <EditForm Model="UserConfig" OnValidSubmit="ChangePassword">
+                    <DataAnnotationsValidator />
+
+                    @{
+                        bool showCurrentPasswordField = !CanSkipCurrentPasswordValidation();
+                    }
+
+                    @if (showCurrentPasswordField)
+                    {
+                        <div class="formGroup">
+                            <label class="formLabel" for="currentPassword">Current Password</label>
+                            <InputText id="currentPassword" type="password" @bind-Value="UserConfig.CurrentPassword" class="formControl" />
+                            <ValidationMessage For="@(() => UserConfig.CurrentPassword)" />
+                        </div>
+                    }
+
+                    <div class="formGroup">
+                        <label class="formLabel" for="newPassword">New Password</label>
+                        <InputText id="newPassword" type="password" @bind-Value="UserConfig.NewPassword" class="formControl" />
+                        <ValidationMessage For="@(() => UserConfig.NewPassword)" />
+                    </div>
+                    <div class="formGroup">
+                        <label class="formLabel" for="confirmNewPassword">Confirm New Password</label>
+                        <InputText id="confirmNewPassword" type="password" @bind-Value="UserConfig.ConfirmNewPassword" class="formControl" />
+                        <ValidationMessage For="@(() => UserConfig.ConfirmNewPassword)" />
+                    </div>
+                    <button type="submit" class="btnPrimary" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Change Password
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    @if (ShowSuccessPopup)
+    {
+        <div class="notification-popup notification-success">
+            <div class="notification-content">
+                <div class="notification-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="notification-message">@SuccessMessage</div>
+                <button class="notification-close" @onclick="CloseSuccessPopup">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>

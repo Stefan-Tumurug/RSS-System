@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>API Authentication</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/swagger-ui/login-styles.css" />
+</head>
+<body>
+    <div class="loginContainer">
+        <div class="loginPanel">
+            <div class="loginHeader">
+                <h2 class="loginTitle">Login</h2>
+                <p class="loginSubtitle">Sign in to access the API</p>
+            </div>
+            <form id="loginForm">
+                <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+                <div class="formGroup">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="formControl" required />
+                </div>
+                <div class="formGroup">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="formControl" required />
+                </div>
+                <button type="submit" id="loginButton" class="btnLogin">Login</button>
+            </form>
+            <div class="card-footer">
+                <small>RSS Management System API</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = `${name}=${value || ""}${expires}; path=/`;
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessageDiv = document.getElementById('errorMessage');
+            const loginButton = document.getElementById('loginButton');
+
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
+            errorMessageDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    errorMessageDiv.className = 'alert alert-danger';
+                    errorMessageDiv.textContent = result.errorMessage || 'Login failed. Please check your credentials.';
+                    errorMessageDiv.style.display = 'block';
+
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = 'Login';
+                    return;
+                }
+                localStorage.setItem('jwt_token', result.item.token);
+                localStorage.setItem('userRole', result.item.role);
+                setCookie('AuthToken', result.item.token, 1);
+
+                errorMessageDiv.className = 'alert alert-success';
+                errorMessageDiv.textContent = 'Login successful! Redirecting to API documentation...';
+                errorMessageDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = '/swagger';
+                }, 1000);
+            } catch (error) {
+                errorMessageDiv.className = 'alert alert-danger';
+                errorMessageDiv.textContent = 'An error occurred. Please try again.';
+                errorMessageDiv.style.display = 'block';
+
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Login';
+
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+﻿@page "/admin/user/management"
+@namespace RssSite.Pages.Users
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+@if (IsLoadingAuthState)
+{
+    <div class="loadingIndicator">
+        <p>Loading...</p>
+    </div>
+}
+@if (!IsLoadingAuthState && !IsAdmin)
+{
+    <div class="unauthorizedMessage">
+        <h2>Access Denied</h2>
+        <p>You do not have permission to access this page.</p>
+    </div>
+}
+@if (!IsLoadingAuthState && IsAdmin)
+{
+    <div class="screenManagement">
+        <div class="pageHeader">
+            <h1 class="mainTitle">User Management</h1>
+        </div>
+
+        @if (UserList == null)
+        {
+            <div class="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Loading users...</p>
+            </div>
+        }
+        @if (UserList != null)
+        {
+            <div class="searchAndFilterContainer">
+                <div class="searchBar">
+                    <input type="text"
+                           @bind-value="SearchTerm"
+                           @bind-value:event="oninput"
+                           @onkeydown="@((e) => { if (e.Key == "Enter") Search(); })"
+                           placeholder="Search users..."
+                           class="searchInput" />
+                    <button class="btnPrimary" @onclick="Search">
+                        <span>Search</span>
+                    </button>
+                </div>
+
+                <div class="pageSizeSelector">
+                    <label for="pageSize">Items per page:</label>
+                    <select id="pageSize" @bind="PageSize">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="dataTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Active</th>
+                        <th class="actionsColumn">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (User currentUser in DisplayedUsers)
+                    {
+                        <tr>
+                            <td>@currentUser.Username</td>
+                            <td>@currentUser.Email</td>
+                            <td>@currentUser.Role</td>
+                            <td>@(currentUser.IsActive ? "Yes" : "No")</td>
+                            <td style="position: relative;">
+                                <div class="buttonGroup">
+                                    @if (currentUser.Role == "Admin")
+                                    {
+                                        <button class="btnProtected" disabled>
+                                            Protected
+                                        </button>
+                                    }
+                                    @if (currentUser.Role != "Admin")
+                                    {
+                                        <button class="btnSecondary"
+                                                @onclick="@(() => NavigateToUserConfiguration(currentUser.UserID))">
+                                            Configure
+                                        </button>
+                                        <button class="btnDanger"
+                                                @onclick="@(() => ConfirmDelete(currentUser.UserID, currentUser.Username))">
+                                            Delete
+                                        </button>
+                                    }
+                                </div>
+
+                                @if (ShowDeleteConfirmation && UserIDToDelete == currentUser.UserID)
+                                {
+                                    <div class="modalOverlay">
+                                        <div class="deletePopup">
+                                            <div class="modalHeader">
+                                                <h5>Confirm Deletion</h5>
+                                            </div>
+                                            <div class="modalBody">
+                                                <p>Are you sure you want to delete "<strong>@UsernameToDelete</strong>"?</p>
+                                                <p class="text-danger">This action cannot be undone.</p>
+                                            </div>
+                                            <div class="modalFooter">
+                                                <button class="btnSecondary" @onclick="CancelDelete">Cancel</button>
+                                                <button class="btnDanger" @onclick="OnDeleteConfirmedAsync">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (DisplayedUsers.Count == 0)
+            {
+                <div class="noResults">
+                    <p>No users found@(string.IsNullOrWhiteSpace(SearchTerm) ? "." : " matching your search criteria.")</p>
+                </div>
+            }
+
+            <div class="paginationControls">
+                <div class="pageInfo">
+                    @if (TotalUsers > 0)
+                    {
+                        <span>
+                            Showing @((CurrentPage - 1) * PageSize + 1)-@(
+                System.Math.Min(CurrentPage * PageSize, TotalUsers)
+                ) of @TotalUsers items
+                        </span>
+                    }
+                    @if (TotalUsers <= 0)
+                    {
+                        <span>0 items</span>
+                    }
+                </div>
+                <div class="pageButtons">
+                    <button class="btnPagination" @onclick="@(() => GoToPage(1))" disabled="@(CurrentPage == 1 || TotalPages == 0)">First</button>
+                    <button class="btnPagination" @onclick="PreviousPage" disabled="@(CurrentPage == 1 || TotalPages == 0)">Previous</button>
+
+                    @for (int pageNumber = System.Math.Max(1, CurrentPage - 2);
+                   pageNumber <= System.Math.Min(TotalPages, (CurrentPage + 2 > 5 ? CurrentPage + 2 : 5));
+                   pageNumber++)
+                    {
+                        <button class="btnPage @(pageNumber == CurrentPage ? "btnPageActive" : "")"
+                                @onclick="@(() => GoToPage(pageNumber))">
+                            @pageNumber
+                        </button>
+                    }
+
+                    <button class="btnPagination" @onclick="NextPage" disabled="@(CurrentPage == TotalPages || TotalPages == 0)">Next</button>
+                    <button class="btnPagination" @onclick="@(() => GoToPage(TotalPages))" disabled="@(CurrentPage == TotalPages || TotalPages == 0)">Last</button>
+                </div>
+            </div>
+
+            <div class="createUserButton mt-4">
+                <button class="btnPrimary" @onclick="NavigateToUserCreation">Create User</button>
+            </div>
+        }
+    </div>
+}

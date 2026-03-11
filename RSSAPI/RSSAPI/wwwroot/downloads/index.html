@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Remote Screen Player</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="download-container">
+        <div class="download-card">
+            <div class="card-header">
+                <img src="/img/logo.png" alt="Remote Screen Player Logo" class="logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'100\' viewBox=\'0 0 200 100\'><rect width=\'200\' height=\'100\' fill=\'%232C3E50\'/><text x=\'50%\' y=\'50%\' font-size=\'20\' text-anchor=\'middle\' fill=\'white\' font-family=\'Arial\'>Remote Screen Setup</text></svg>';" />
+                <h1 class="main-title">Download Remote Screen Player</h1>
+            </div>
+
+            <div class="card-content">
+                <div id="loading-indicator" class="loading-indicator">
+                    <div class="spinner"></div>
+                    <p class="version-info">Fetching latest version...</p>
+                </div>
+
+                <div id="download-content" style="display:none;">
+                    <p class="version-info" id="version-display">Latest Version: <span id="version-number">1.0.0.0</span></p>
+                    <a id="download-link" class="btnPrimary download-button" href="#">Download Now</a>
+
+                    <div class="requirements">
+                        <h3>System Requirements</h3>
+                        <ul>
+                            <li>Windows 10 or later</li>
+                            <li>2 GB RAM minimum</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="error-message" class="alert-error" style="display:none;">
+                    Could not fetch version info. Please try again later.
+                </div>
+            </div>
+
+            <div class="card-footer">
+                &copy; <span id="current-year">2024</span> Diviso - All Rights Reserved
+            </div>
+        </div>
+    </div>
+    <script src="/downloads/download.js"></script>
+</body>
+</html>

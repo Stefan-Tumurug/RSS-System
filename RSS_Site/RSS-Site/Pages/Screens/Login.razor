@@ -1,0 +1,62 @@
+﻿@page "/login"
+@inherits LoginBase
+@namespace RssSite.Components.Pages
+@using Microsoft.AspNetCore.Components.Authorization
+@using RssSite.Components.Authentication
+@using System.ComponentModel.DataAnnotations
+<PageTitle>Login - RSS Management System</PageTitle>
+<div class="loginContainer">
+    <div class="loginPanel">
+        <div class="loginHeader">
+            <h2 class="loginTitle">Login</h2>
+            <p class="loginSubtitle">Sign in to continue</p>
+        </div>
+        <EditForm Model="UserLoginModel" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            @if (!string.IsNullOrEmpty(LoginErrorMessage))
+            {
+                <div class="alert alert-danger">@LoginErrorMessage</div>
+            }
+            <div class="formGroup">
+                <label for="username" class="formLabel">Username</label>
+                <InputText id="username"
+                           @bind-Value="UserLoginModel.Username"
+                           class="formControl"
+                           autocomplete="username"
+                           aria-label="Enter your username" />
+                <ValidationMessage For="@(() => UserLoginModel.Username)" class="text-danger" />
+            </div>
+            <div class="formGroup">
+                <label for="password" class="formLabel">Password</label>
+                <InputText id="password"
+                           @bind-Value="UserLoginModel.Password"
+                           type="password"
+                           class="formControl"
+                           autocomplete="current-password"
+                           aria-label="Enter your password" />
+                <ValidationMessage For="@(() => UserLoginModel.Password)" class="text-danger" />
+            </div>
+            <div class="formGroup rememberMeContainer">
+                <label>
+                    <InputCheckbox id="rememberMe" @bind-Value="UserLoginModel.RememberMe" />
+                    <div class="toggleSwitch"></div>
+                    <span>Remember Me</span>
+                </label>
+            </div>
+            <button type="submit" class="btnLogin" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span class="spinner"></span>
+                    <span>Logging in...</span>
+                }
+                @if (!IsLoading)
+                {
+                    <span>Login</span>
+                }
+            </button>
+        </EditForm>
+        <div class="card-footer">
+            <small>RSS Management System</small>
+        </div>
+    </div>
+</div>

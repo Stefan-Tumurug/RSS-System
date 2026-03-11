@@ -1,0 +1,13 @@
+﻿@namespace RssSite.Components.Shared
+@inherits LayoutComponentBase
+
+<div class="mainLayout">
+    <aside class="sidebarNavigation" aria-label="Main Navigation">
+        <NavMenu />
+    </aside>
+    <main class="contentArea" role="main">
+        <div class="pageContainer">
+            @Body
+        </div>
+    </main>
+</div>

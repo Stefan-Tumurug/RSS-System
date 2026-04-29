@@ -1,105 +1,152 @@
-# RSS-System
+# RSS System – Internship and Exam Project (.NET Full-Stack Application)
 
-## Overview
+This project is a web-based RSS management system developed during an internship as part of an IT education programme.  
+The system was later expanded and submitted as part of a final exam project and deployed on a company domain for hosted evaluation and demonstration purposes.
 
-RSS-System is a multi-project .NET solution containing three components
-that together demonstrate a simple RSS-based system architecture.
+The solution demonstrates full-stack development with layered architecture, API integration, and real deployment outside a local development environment.
 
-The repository is organized as a single Git repository that contains
-three separate projects:
+---
 
--   **RSSAPI** -- Backend API responsible for exposing RSS-related
-    endpoints.
--   **RSSPlayer** -- A client/player application that consumes RSS
-    feeds.
--   **RSS_Site** -- A web interface for interacting with the RSS system.
+# Project Context
 
-The projects are kept in the same repository to simplify development,
-version control, and deployment.
+This system was:
 
-------------------------------------------------------------------------
+- developed during an internship placement
+- extended as part of an exam project submission
+- deployed on a company domain
+- used for demonstration and testing in a hosted environment
 
-## Project Structure
+Although the system is not in active organisational use, it was implemented as a realistic production-style solution rather than a classroom-only prototype.
 
-    RSS-System
-    ├─ RSSAPI
-    │  ├─ RSSAPI.sln
-    │  └─ RSSAPI/
-    ├─ RSSPlayer
-    │  ├─ RSSPlayer.sln
-    │  └─ RSS_Player/
-    ├─ RSS_Site
-    │  ├─ RSSSite.sln
-    │  └─ RSS-Site/
-    └─ README.md
+---
 
-Each folder contains its own Visual Studio solution and project files.
+# Purpose of the System
 
-------------------------------------------------------------------------
+The RSS System provides a structured interface for collecting and presenting RSS feeds from multiple sources in a single application.
 
-## Components
+It allows users to:
 
-### RSSAPI
+- aggregate RSS feeds
+- organise external information sources
+- present structured updates in a UI
+- centralise content streams in one location
 
-The API project provides backend functionality for working with RSS
-data.
+The system was designed with maintainability and extensibility in mind.
 
-Typical responsibilities include: - Exposing API endpoints - Processing
-RSS feeds - Providing data to clients
+---
 
-### RSSPlayer
+# Features
 
-RSSPlayer is a client application that consumes RSS feeds from the API
-or other sources.
-Features: - Fetching RSS feeds - Displaying feed content - Live Updates from API
+Core functionality includes:
 
-### RSS_Site
+- RSS feed integration
+- aggregation from multiple sources
+- structured content presentation
+- API-based backend communication
+- separation between UI and business logic
+- modular service-based architecture
 
-The web project provides a browser-based interface for interacting with
-the RSS system.
+---
 
-Features: - Viewing and Managing RSSPlayer feeds - Managing feed subscriptions - Interacting with the backend API
+# Architecture Overview
 
-------------------------------------------------------------------------
+The solution follows a layered architecture separating responsibilities between:
 
-## Development Setup
+Frontend  
+Backend services  
+Data models  
+API communication  
+State handling logic  
 
-### Requirements
+Typical responsibilities include:
 
--   .NET SDK
--   Visual Studio or Visual Studio Code
--   Git
+Frontend:
 
-### Open a project
+- rendering RSS content
+- handling navigation and interaction
+- presenting structured feed entries
 
-Each component has its own solution file. You can open them individually
-in Visual Studio.
+Backend:
 
-Examples:
+- retrieving RSS sources
+- parsing feed data
+- exposing structured API endpoints
 
-    RSSAPI/RSSAPI.sln
-    RSSPlayer/RSSPlayer.sln
-    RSS_Site/RSSSite.sln
+Shared layers:
 
-------------------------------------------------------------------------
+- DTO models
+- request/response contracts
+- service abstractions
 
-## Git Notes
+---
 
-This repository intentionally keeps all projects inside a single Git
-repository.
+# Technologies Used
 
-Important: - Nested `.git` repositories were removed so all projects are
-tracked by the main repository. - Build files such as `bin`, `obj`, and
-`.vs` should be ignored through `.gitignore`.
+Frontend:
 
-Typical `.gitignore` entries:
+- Blazor (.NET)
 
-    .vs/
-    **/bin/
-    **/obj/
-    *.user
-------------------------------------------------------------------------
+Backend:
 
-## License
+- ASP.NET Core Web API
 
-This project is provided for educational and development purposes, and might not function as intended due to being reliant on a company server.
+Architecture:
+
+- DTO-based communication
+- service-layer abstraction
+- separation of concerns between UI and domain logic
+
+Development tools:
+
+- Visual Studio / VS Code
+- .NET
+
+Deployment:
+
+- hosted on company domain infrastructure for evaluation and demonstration
+
+---
+
+# Example Workflow
+
+Typical system behaviour:
+
+1. user selects RSS sources
+2. backend retrieves feed data
+3. system parses structured content
+4. frontend renders feed entries
+5. user navigates aggregated information
+6. feeds can be refreshed dynamically
+
+---
+
+# Learning Outcomes
+
+This project demonstrates experience with:
+
+- full-stack .NET application development
+- layered architecture design
+- API-driven communication
+- RSS parsing workflows
+- deployment to hosted environment
+- translating requirements into working software during internship collaboration
+
+---
+
+# Academic Context
+
+The system formed part of a final exam project and reflects the transition from internship prototype development to structured solution delivery.
+
+It represents both:
+
+practical internship experience  
+formal academic evaluation  
+
+---
+
+# Author
+
+Stefan Andrei Tumurug
+
+Developed during internship placement and extended as part of an exam project.  
+Deployed on company domain infrastructure for hosted evaluation and demonstration purposes.
